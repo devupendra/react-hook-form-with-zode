@@ -1,83 +1,111 @@
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import CustomInput from "./CustomInput";
 
 export default function Form() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState([]);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    getValues,
+  } = useForm();
 
-  async function onSubmit(e) {
-    e.preventDefault();
-    setIsSubmitting(true);
-    if (password !== confirmPassword) {
-      setErrors(["Password and Confirm password are not same."]);
-      setIsSubmitting(false);
-      return;
-    }
-    await new Promise((res) => setTimeout(res, 2000));
-    setEmail("");
-    setName("");
-    setPassword("");
-    setConfirmPassword("");
-    setErrors([]);
-    setIsSubmitting(false);
+  async function onsubmit(data) {
+    await new Promise((res) => setTimeout(res, 1500));
+    console.log(data);
+    reset();
   }
 
   return (
     <div>
-      <form onSubmit={onSubmit}>
-        {errors.length > 0 && (
-          <ul>
-            {errors.map((error, index) => (
-              <li
-                key={index}
-                className="bg-red-100 text-red-500 px-4 py-2 rounded mb-3"
-              >
-                {error}
-              </li>
-            ))}
-          </ul>
-        )}
+      <form onSubmit={handleSubmit(onsubmit)}>
         <div className="mb-3 w-full sm:flex flex-row gap-4">
-          <CustomInput
-            value={name}
-            label="Your Name"
-            name="your-name"
-            type="text"
-            placeholder="Enter you name"
-            onChange={(e) => setName(e.target.value)}
-          />
-          <CustomInput
-            value={email}
-            label="Your Email"
-            name="your-email"
-            type="email"
-            placeholder="Enter you email"
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          {/* Name Input */}
+          <div className="w-full mb-1.5">
+            <label htmlFor={"name"} className="block mb-0.5">
+              Your Name
+            </label>
+            <input
+              type="text"
+              {...register("name")}
+              placeholder="Enter you name"
+              required
+              className="placeholder:text-gray-700 border border-gray-700 text-white outline-none bg-inherit w-full py-2 rounded-md px-1 focus:border-green-400"
+            />
+            {errors.name && (
+              <p className="py-0.5 px-2 text-red-500">{errors.name.message}</p>
+            )}
+          </div>
+
+          {/* Email Input */}
+          <div className="w-full mb-1.5">
+            <label htmlFor={"name"} className="block mb-0.5">
+              Your Email
+            </label>
+            <input
+              type="email"
+              {...register("email", {
+                required: "Email is required.",
+              })}
+              placeholder="Enter you email"
+              required
+              className="placeholder:text-gray-700 border border-gray-700 text-white outline-none bg-inherit w-full py-2 rounded-md px-1 focus:border-green-400"
+            />
+            {errors.email && (
+              <p className="py-0.5 px-2 text-red-500">{errors.email.message}</p>
+            )}
+          </div>
         </div>
         <div className="mb-3 w-full sm:flex flex-row gap-4">
-          <CustomInput
-            label="Create Password"
-            value={password}
-            name="your-password"
-            type="password"
-            placeholder="Create a strong password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <CustomInput
-            value={confirmPassword}
-            label="Confirm Password"
-            name="confirm-password"
-            type="password"
-            placeholder="Confirm your password"
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
+          {/* Password Input */}
+          <div className="w-full mb-1.5">
+            <label htmlFor={"name"} className="block mb-0.5">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              {...register("password", {
+                required: "Password is required.",
+                minLength: {
+                  value: 4,
+                  message: "Password should be atleast 4 characters",
+                },
+              })}
+              placeholder="Create A Strong Password"
+              required
+              className="placeholder:text-gray-700 border border-gray-700 text-white outline-none bg-inherit w-full py-2 rounded-md px-1 focus:border-green-400"
+            />
+            {errors.password && (
+              <p className="py-0.5 px-2 text-red-500">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+          {/* Confirm password Input */}
+          <div className="w-full mb-1.5">
+            <label htmlFor={"name"} className="block mb-0.5">
+              Confirm Your Password Password
+            </label>
+            <input
+              type="password"
+              {...register("confirmPassword", {
+                required: "Confirm Password is required",
+                validate: (value) =>
+                  value === getValues("password") ||
+                  "Password and confirm password should match.",
+              })}
+              placeholder="Confirm Your password"
+              required
+              className="placeholder:text-gray-700 border border-gray-700 text-white outline-none bg-inherit w-full py-2 rounded-md px-1 focus:border-green-400"
+            />
+            {errors.confirmPassword && (
+              <p className="py-0.5 px-2 text-red-500">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="mb-3 w-full text-center">
