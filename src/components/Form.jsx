@@ -2,19 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 
-const signupSchema = z
-  .object({
-    name: z.string(),
-    email: z.string().email(),
-    password: z.string().min(8, "Password should be atleast 8 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords are not same.",
-    path: ["confirmPassword"],
-  });
+import { signupSchema } from "@/utils/schema";
 
 export default function Form() {
   const {
@@ -22,14 +11,48 @@ export default function Form() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    setError,
   } = useForm({
     resolver: zodResolver(signupSchema),
   });
 
   async function onsubmit(data) {
-    await new Promise((res) => setTimeout(res, 1500));
-    console.log(data);
-    reset();
+    const response = await fetch("/api/signup", {
+      method: "POST",
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        confirmPassword: 12345678,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      alert("Submitting form failed.");
+      return;
+    }
+
+    if (result.errors) {
+      const errors = result.errors;
+      if (errors.name) {
+        setError("name", { type: "server", message: errors.name });
+      } else if (errors.email) {
+        setError("email", { type: "server", message: errors.email });
+      } else if (errors.password) {
+        setError("password", { type: "server", message: errors.password });
+      } else if (errors.confirmPassword) {
+        setError("confirmPassword", {
+          type: "server",
+          message: errors.confirmPassword,
+        });
+      } else {
+        alert("Something went wrong.");
+      }
+    }
+    // reset();
   }
 
   return (
