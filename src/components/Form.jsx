@@ -1,7 +1,20 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import CustomInput from "./CustomInput";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const signupSchema = z
+  .object({
+    name: z.string(),
+    email: z.string().email(),
+    password: z.string().min(8, "Password should be atleast 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords are not same.",
+    path: ["confirmPassword"],
+  });
 
 export default function Form() {
   const {
@@ -9,8 +22,9 @@ export default function Form() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    getValues,
-  } = useForm();
+  } = useForm({
+    resolver: zodResolver(signupSchema),
+  });
 
   async function onsubmit(data) {
     await new Promise((res) => setTimeout(res, 1500));
@@ -46,9 +60,7 @@ export default function Form() {
             </label>
             <input
               type="email"
-              {...register("email", {
-                required: "Email is required.",
-              })}
+              {...register("email")}
               placeholder="Enter you email"
               required
               className="placeholder:text-gray-700 border border-gray-700 text-white outline-none bg-inherit w-full py-2 rounded-md px-1 focus:border-green-400"
@@ -66,13 +78,7 @@ export default function Form() {
             </label>
             <input
               type="password"
-              {...register("password", {
-                required: "Password is required.",
-                minLength: {
-                  value: 4,
-                  message: "Password should be atleast 4 characters",
-                },
-              })}
+              {...register("password")}
               placeholder="Create A Strong Password"
               required
               className="placeholder:text-gray-700 border border-gray-700 text-white outline-none bg-inherit w-full py-2 rounded-md px-1 focus:border-green-400"
@@ -90,12 +96,7 @@ export default function Form() {
             </label>
             <input
               type="password"
-              {...register("confirmPassword", {
-                required: "Confirm Password is required",
-                validate: (value) =>
-                  value === getValues("password") ||
-                  "Password and confirm password should match.",
-              })}
+              {...register("confirmPassword")}
               placeholder="Confirm Your password"
               required
               className="placeholder:text-gray-700 border border-gray-700 text-white outline-none bg-inherit w-full py-2 rounded-md px-1 focus:border-green-400"
